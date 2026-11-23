@@ -1,30 +1,30 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
+import 'dart:convert';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:medical_appointment_state_management/main.dart';
+import 'package:medical_appointment_state_management/models/app_data.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
-
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
-  });
+  TestWidgetsFlutterBinding.ensureInitialized();
+  test(
+    'original JSON provides doctors, services and remote media URLs',
+    () async {
+      final json = jsonDecode(
+        await rootBundle.loadString('assets/data/lab_v2.json'),
+      ) as Map<String, dynamic>;
+      final data = AppData.fromJson(json);
+      expect(data.doctors, isNotEmpty);
+      expect(data.services, isNotEmpty);
+      expect(
+        data.services.every(
+          (s) => (s['iconUrl'] as String).startsWith('https://'),
+        ),
+        isTrue,
+      );
+      expect(
+        data.doctors.every((d) => d.avatarUrl.startsWith('https://')),
+        isTrue,
+      );
+    },
+  );
 }
